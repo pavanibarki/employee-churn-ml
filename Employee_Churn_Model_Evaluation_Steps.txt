@@ -1,0 +1,104 @@
+
+# ✅ Employee Churn Prediction - Full Model Evaluation Steps
+
+This guide outlines all the key steps executed to evaluate multiple machine learning models for predicting employee churn using the dataset `Churn.csv`.
+
+---
+
+## 🔹 Step 1: Import Required Libraries
+```python
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
+```
+
+---
+
+## 🔹 Step 2: Load and Preprocess the Dataset
+```python
+df = pd.read_csv("Churn.csv")
+df.drop(["RowNumber", "CustomerId", "Surname"], axis=1, inplace=True)
+df = pd.get_dummies(df, drop_first=True)  # Convert categorical to numeric
+```
+
+---
+
+## 🔹 Step 3: Split Features and Target
+```python
+X = df.drop("Exited", axis=1)
+y = df["Exited"]
+```
+
+---
+
+## 🔹 Step 4: Feature Scaling and Train-Test Split
+```python
+scaler = StandardScaler()
+X = scaler.fit_transform(X)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+```
+
+---
+
+## 🔹 Step 5: Define Machine Learning Models
+```python
+models = {
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "KNN": KNeighborsClassifier(),
+    "SVC": SVC(probability=True),
+    "Decision Tree": DecisionTreeClassifier(),
+    "Random Forest": RandomForestClassifier(),
+    "Gradient Boosting": GradientBoostingClassifier(),
+    "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss'),
+    "LightGBM": LGBMClassifier(),
+    "CatBoost": CatBoostClassifier(verbose=0)
+}
+```
+
+---
+
+## 🔹 Step 6: Train and Evaluate All Models
+```python
+results = []
+for name, model in models.items():
+    print(f"Training {name}...")
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    results.append({
+        "Model": name,
+        "Accuracy": accuracy_score(y_test, y_pred),
+        "Precision": precision_score(y_test, y_pred),
+        "Recall": recall_score(y_test, y_pred),
+        "F1 Score": f1_score(y_test, y_pred),
+        "ROC AUC": roc_auc_score(y_test, y_pred)
+    })
+
+results_df = pd.DataFrame(results)
+print(results_df.sort_values(by="Accuracy", ascending=False))
+```
+
+---
+
+## ✅ Best Performing Model
+- **XGBoost** achieved the best overall performance:
+  - **Accuracy:** 86.95%
+  - **F1 Score:** 0.6255
+  - **ROC AUC:** 0.7506
+
+---
+
+## 🔚 Next Steps (Optional)
+- Add SHAP Explainability to XGBoost
+- Visualize ROC Curve or Confusion Matrix
+- Try ANN with Keras/TensorFlow
+- Export results to Excel or CSV
